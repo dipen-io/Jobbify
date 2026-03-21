@@ -2,7 +2,7 @@ require('dotenv').config();
 require('./config/env');
 
 const express = require('express');
-// const errroHandler = require();
+const errorHandler = require('../src/middleware/errorHandler');
 
 const app = express();
 
@@ -26,6 +26,6 @@ app.use((req, res) => {
 })
 
 //Global error handler
-// app.use(errorHandler);
+app.use(errorHandler);
 
 module.exports = app;
