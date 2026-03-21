@@ -1,14 +1,20 @@
 require('dotenv').config();
 require('./config/env');
+const morgon = require('morgan');
 
 const express = require('express');
 const errorHandler = require('../src/middleware/errorHandler');
+const morgan = require('morgan');
 
 const app = express();
 
 // core middleware
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
+
+if (process.env.NODE_ENV === 'development') {
+    app.use(morgan('dev'));
+}
 
 //Routes
 // app.use('api/v1/auth', require(./modules/auth/auth.router)); 
