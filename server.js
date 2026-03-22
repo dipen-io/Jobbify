@@ -1,6 +1,7 @@
 const app = require('./src/app');
 const http = require('http');
 const  connectToDatabase  = require('./src/config/db');
+const gracefulShutdown = require('./src/utils/shutdown');
 
 const PORT = process.env.PORT || 8000;
 
@@ -18,6 +19,10 @@ const startServer = async () => {
         process.exit(1);
     }
 };
+
+// process.on('SIGTERM', () => gracefulShutdown(server, redisClient, 'SIGTERM'));
+process.on('SIGTERM', () => gracefulShutdown(server, 'SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown(server, 'SIGINT'));
 
 startServer();
 
