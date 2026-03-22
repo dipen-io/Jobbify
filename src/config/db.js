@@ -1,38 +1,40 @@
 const mongoose = require('mongoose');
 
-const connectToDatabase = async ( retries = 5 ) => {
-    if (!process.env.MONGO_URI) {
-        console.error('MONG_URI is not defined');
+const connectToDatabase = async () => {
+    const uri = process.env.MONGO_URI;
+
+    if (!uri) {
+        console.error('💀 FATAL: MONGO_URI is not defined');
         process.exit(1);
     }
+
+    // Set up listeners ONLY ONCE (outside the try/catch or before connecting)
+    mongoose.connection.on('connected', () => console.log('✅ MongoDB: Connected'));
+    mongoose.connection.on('error', (err) => console.error(`❌ MongoDB: ${err.message}`));
+    mongoose.connection.on('disconnected', () => console.warn('⚠️ MongoDB: Disconnected'));
+
+    const options = {
+        serverSelectionTimeoutMS: 5000,
+        maxPoolSize: 50, // Increase for production high-traffic
+        socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+        family: 4 
+    };
+
     try {
-        const conn = await mongoose.connect(process.env.MONG_URI, {
-            serverSelectionTimeoutMS: 5000, // fail fast if db not reachable
-            maxPoolSize: 10, // connection pool
-        });
-        console.log(`db connected: ${conn.connection.host}`);
-
-        mongoose.connection.on('disconnected', () => {
-            console.warn('Mongodb disconnected');
-        })
-        mongoose.connection.on('reconnected', () => {
-            console.log('🔄 MongoDB reconnected');
-        });
-        mongoose.connection.on('error', (err) => {
-            console.error(`❌ MongoDB error: ${err.message}`);
-        });
-
-
-    } catch (error){
-        console.error(`❌ Connection failed: ${err.message}`);
-
-        if (retries > 0) {
-            console.log(`🔁 Retrying... (${retries} left)`);
-            setTimeout(() => connectDB(retries - 1), 5000);
-        } else {
-            console.error("❌ Could not connect to MongoDB. Exiting...");
-            process.exit(1);
-        }
+        await mongoose.connect(uri, options);
+    } catch (error) {
+        console.error(`❌ Initial Connection Failed: ${error.message}`);
+        // In production, let your Process Manager (PM2 or Docker) handle the restart
+        // instead of a manual setTimeout loop to avoid memory leaks.
+        process.exit(1); 
     }
-}
+};
+
+// Handle Graceful Shutdown
+process.on('SIGINT', async () => {
+    await mongoose.connection.close();
+    console.log('🛑 MongoDB connection closed due to app termination');
+    process.exit(0);
+});
+
 module.exports = connectToDatabase;

@@ -1,10 +1,11 @@
 const app = require('./src/app');
+const  connectToDatabase  = require('./src/config/db');
 
 const PORT = process.env.PORT || 8000;
 
 const startServer = async () => {
     try {
-        // await connectDB();
+        await connectToDatabase()
         // await redis.connect();
         app.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);

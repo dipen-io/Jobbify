@@ -1,6 +1,5 @@
 require('dotenv').config();
 require('./config/env');
-const morgon = require('morgan');
 
 const express = require('express');
 const errorHandler = require('../src/middleware/errorHandler');
