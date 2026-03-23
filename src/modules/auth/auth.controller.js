@@ -1,5 +1,5 @@
 const {validationResult} = require('express-validator');
-const { loginUser, registerUser } = require('./auth.service');
+const { loginUser, registerUser, refreshAccessToken } = require('./auth.service');
 const  asyncHandler = require('../../utils/asyncHandler')
 const ApiError = require('../../utils/ApiError');
 const ApiResponse = require('../../utils/ApiResponse');
@@ -30,4 +30,15 @@ const login = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, "Login Successfull", result));
 })
 
-module.exports = { register, login };
+const refreshToken = asyncHandler(async (req, res) => {
+    const {refreshToken} = req.body
+    const result = await refreshAccessToken(refreshToken);
+
+    res.status(200).json(new ApiResponse(200, "Token Refreshed", result));
+})
+
+const getMe = asyncHandler(async(req,res)=> {
+    res.status(200).json(new ApiResponse(200, "fetch user", req.user));
+})
+
+module.exports = { register, login, getMe, refreshToken };

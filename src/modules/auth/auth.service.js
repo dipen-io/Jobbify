@@ -40,7 +40,7 @@ const loginUser = async({email, password}) => {
     const isMatch = await user.comparePassword(password);
     if (!isMatch) throw new ApiError(401, 'Invalid email or password');
 
-    const { accessToken ,  refreshToken } = generateToken(user._id, user.role);
+    const { accessToken , refreshToken } = await  generateToken(user._id, user.role);
     user.refreshToken = refreshToken
     await user.save({ validateBeforeSave: false });
   return { user: { _id: user._id, name: user.name, email: user.email, role: user.role }, accessToken, refreshToken };
