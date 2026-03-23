@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('./user.model')
 const ApiError = require('../../utils/ApiError');
+const bcrypt = require("bcryptjs");
 
 const generateToken = async(userId, role) => {
    const accessToken = jwt.sign(
@@ -25,11 +26,10 @@ const registerUser = async ({name, email, password, role}) => {
         name, email, password, role 
     });
     const {accessToken, refreshToken} = await generateToken(user._id, user.role);
-    user.refreshToken = refreshToken;
+    user.refreshToken = await bcrypt.hash(refreshToken, 10);
     await user.save({ validateBeforeSave: false });
 
   return { user: { _id: user._id, name: user.name, email: user.email, role: user.role }, accessToken, refreshToken };
-
 
 }
 
@@ -46,4 +46,31 @@ const loginUser = async({email, password}) => {
   return { user: { _id: user._id, name: user.name, email: user.email, role: user.role }, accessToken, refreshToken };
 }
 
-module.exports = { registerUser, loginUser };
+const refreshAccessToken = async(token) => {
+    if (!token) throw new ApiError(401, 'Refresh Token is required')
+
+    let decoded; 
+    try {
+        decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+    } catch (error) {
+        throw new ApiError(401, 'Invalid or expired refresh token');
+    }
+
+    const user = await User.findById(decoded.id).select('+refreshToken');
+    if (!user || user.refreshToken) {
+        throw new ApiError (401, 'User not found or token missing');
+    } 
+
+    const isMatch = await bcrypt.compare(token, user.refreshToken);
+    if (!isMatch) {
+        throw new ApiError(401, 'Refresh token missmatch');
+    }
+
+    const {accessToken, refreshToken} = await generateToken(user._id, user.role);
+    const hashedToken = await bcrypt.hash(refreshToken, 10);
+    user.refreshToken = hashedToken;
+    await user.save({ validateBeforeSave: false }); 
+    return { accessToken, refreshToken };
+}
+
+module.exports = { registerUser, loginUser, refreshAccessToken };

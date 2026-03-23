@@ -11,6 +11,13 @@ const register = asyncHandler(async (req, res) => {
     }
 
     const result  = await registerUser(req.body);
+    
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,      // true in production (HTTPS)
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
     res.status(201).json(new ApiResponse(201, 'Registration Successfull', result));
 })
 
