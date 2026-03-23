@@ -2,12 +2,14 @@ require('dotenv').config();
 require('./config/env');
 
 const express = require('express');
+const cors = require('cors');
 const errorHandler = require('../src/middleware/errorHandler');
 const morgan = require('morgan');
 
 const app = express();
 
 // core middleware
+app.use(cors())
 app.use(express.json());
 app.use(express.urlencoded({extended: true}));
 
@@ -17,6 +19,7 @@ if (process.env.NODE_ENV === 'development') {
 
 //Routes
 // app.use('api/v1/auth', require(./modules/auth/auth.router)); 
+app.use('/api/v1/auth', require("./modules/auth/auth.router")); 
 // app.use('api/v1/jobs', require(./modules/jobs/jobs.router)); 
 // app.use('api/v1/upload', require(./modules/upload/upload.router)); 
 

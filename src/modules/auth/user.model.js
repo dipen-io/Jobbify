@@ -17,7 +17,7 @@ const userSchema = new mongoose.Schema({
         lowercase: true,
     },
 
-    email: {
+    password: {
         type: String,
         required: [true, 'Password is Required'],
         minLength: [6, "Password must be at least 6 character"],
@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
     role: {
         type: String,
         enum: ["recruiter", "applicant"],
-        defautl: "applicant"
+        default: "applicant"
     },
     resume: {
         type: String,
@@ -41,10 +41,9 @@ const userSchema = new mongoose.Schema({
 )
 
 // hash the password 
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
-    this.password = await bcrypt.hash(this.password, 10);
-    next();
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
 //Compare the password method
