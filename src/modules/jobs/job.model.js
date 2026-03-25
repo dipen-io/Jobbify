@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const ApiError = require('../../utils/ApiError');
 
 const jobSchema = new mongoose.Schema({
     title: {
@@ -21,7 +22,6 @@ const jobSchema = new mongoose.Schema({
         website: {
             type : String,
         },
-
     },
     location: {
         type: String,
@@ -39,7 +39,7 @@ const jobSchema = new mongoose.Schema({
     },
     workMode: {
         type: String,
-        enum: ['remove', 'onsite', 'hybrid'],
+        enum: ['remote', 'onsite', 'hybrid'],
         default: 'onsite'
     },
     experienceLevel : {
@@ -79,6 +79,25 @@ const jobSchema = new mongoose.Schema({
         required: true
     },
 }, { timestamps: true })
+
+// prevent invalid salary
+jobSchema.pre('save', async function () {
+    if (this.salary?.min && this.salary?.max) {
+        if (this.salary.min > this.salary.max) {
+            throw new Error("Min salary can't be greater than max salary");
+        }
+    }
+});
+
+// auto close expired jobs
+jobSchema.pre('find', function () {
+    this.where({
+        $or: [
+            { deadline: { $exists: false } },
+            { deadline: { $get: new Date()} }
+        ]
+    });
+});
 
 //indexes
 jobSchema.index({location: 1, status: 1});

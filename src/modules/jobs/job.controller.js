@@ -6,7 +6,6 @@ const asyncHandler = require('../../utils/asyncHandler');
 const { createJob, getJobs } = require('./job.service');
 
 const create = asyncHandler(async (req, res) => {
-    console.log("CRETA")
     const errors = validationResult(req);
     if (!errors.isEmpty()) throw new ApiError(422, 'Validation failed', errors.array());
 
