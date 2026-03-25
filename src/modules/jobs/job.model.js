@@ -13,9 +13,15 @@ const jobSchema = new mongoose.Schema({
         maxLength : [5000, 'Title cannot be exceded 5000 character'],
     },
     company: {
-        type: String,
-        required: [true, 'Company name is required'],
-        trim: true,
+        name : {
+            type: String,
+            required: [true, 'Company name is required'],
+            trim: true,
+        },
+        website: {
+            type : String,
+        },
+
     },
     location: {
         type: String,
@@ -26,6 +32,30 @@ const jobSchema = new mongoose.Schema({
         min: {type: Number, default: 0},
         max: {type: Number, default: 0},
     },
+    jobType: {
+        type: String,
+        enum: ['full-time', 'part-time', 'contract', 'internship'],
+        default: 'full-time'
+    },
+    workMode: {
+        type: String,
+        enum: ['remove', 'onsite', 'hybrid'],
+        default: 'onsite'
+    },
+    experienceLevel : {
+        type: String,
+        enum: ['junior', 'mid', 'senior'],
+        defualt: 'junior'
+    },
+    skills: [
+        {
+            type: String,
+            trim: true
+        }
+    ],
+    deadline: {
+        type: Date,
+    },
     tags: {
         type: [String],
         defautl: []
@@ -35,16 +65,24 @@ const jobSchema = new mongoose.Schema({
         enum: ['open', 'closed'],
         defautl: 'open'
     },
+    views: {
+        type: Number,
+        default: 0
+    },
+    applicantsCount: {
+        type: Number,
+        default: 0
+    },
     postedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: true
     },
-}, {timestamps: true})
+}, { timestamps: true })
 
 //indexes
 jobSchema.index({location: 1, status: 1});
-jobSchema.index({title: 'text', description: 'text'});
+jobSchema.index({title: 'text', description: 'text', skills: 'text'});
 jobSchema.index({createdAt: -1});
 jobSchema.index({createdAt: -1, _id: -1}); // cursor pagination
 
