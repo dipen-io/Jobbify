@@ -14,9 +14,9 @@ const create = asyncHandler(async (req, res) => {
 })
 
 const list = asyncHandler(async (req, res) => {
-    const { limit, cursor, search, location, status, tag } = req.query;
-    const result = await getJobs({ limit, cursor, search, location, tag, status });
-    res.status(200).json(new ApiResponse(200, 'Job Fetched', result.jobs, { nextCursor: result.nextCursor }));
+    const { limit, cursor, search, location, status, tag, skills, jobType, workMode } = req.query;
+    const result = await getJobs({ limit, cursor, search, location, jobType, tag, status, skills, workMode });
+    res.status(200).json(new ApiResponse(200, 'Job Fetched', result.jobs  ,{ nextCursor: result.nextCursor, totalJobs: result.totalJobs }));
 });
 
 module.exports = { create, list };

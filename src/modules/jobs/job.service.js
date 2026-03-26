@@ -2,7 +2,6 @@ const Job = require('./job.model');
 const User = require('../auth/user.model');
 const mongoose = require('mongoose');
 const ApiError = require('../../utils/ApiError');
-const { decode } = require('jsonwebtoken');
 // const redis = require('../../config/redis');
 
 const CACHE_TTL = 60; // seconds 
@@ -15,14 +14,26 @@ const createJob = async (data, userId) => {
 };
 
 // -- Get all jobs(cursor pagination + filters)
-const getJobs = async ({ limit = 10, search, cursor, location, status, tag }) => {
+const getJobs = async ({ limit = 10, search, cursor, location, status, tag, skills, jobType, workMode }) => {
     const andConditions = [];
 
     if (search) {
         andConditions.push({ $text: { $search: search } });
     }
+    if (workMode) {
+        andConditions.push({ workMode })
+    }
+    if (jobType) {
+        andConditions.push({ jobType})
+    }
+    if (skills) {
+        andConditions.push({ skills })
+    }
+    // if (location) {
+    //     andConditions.push({ location: new RegExp(location, 'i') });
+    // }
     if (location) {
-        andConditions.push({ location: new RegExp(location, 'i') });
+        andConditions.push({ location });
     }
     if (status) {
         andConditions.push({ status })
@@ -30,6 +41,7 @@ const getJobs = async ({ limit = 10, search, cursor, location, status, tag }) =>
     if (tag) {
         andConditions.push({ tag });
     }
+
     //Handle cursor pagination
     if (cursor) {
         try {
@@ -43,7 +55,7 @@ const getJobs = async ({ limit = 10, search, cursor, location, status, tag }) =>
                     { createdAt: { $lt: new Date(decoded.createdAt) } },
                     {
                         createdAt: new Date(decoded.createdAt),
-                        _id: { $lt: new mongoose.Types.ObjectId(decode._id) }
+                        _id: { $lt: new mongoose.Types.ObjectId(decoded._id) }
                     }
                 ]
             });
@@ -51,6 +63,7 @@ const getJobs = async ({ limit = 10, search, cursor, location, status, tag }) =>
             throw new ApiError(401, "Invalid cursor", error.message);
         }
     }
+
 
     // build the final filter
     const filter = andConditions.length > 0 ? { $and: andConditions } : {};
@@ -64,9 +77,11 @@ const getJobs = async ({ limit = 10, search, cursor, location, status, tag }) =>
         .limit(Number(limit) + 1) // fetch one extra to check if next page exists
         .lean()
         .populate('postedBy', 'name email');
+
     // handle pagination
     const hasNext = jobs.length > limit
     if (hasNext) jobs.pop();
+    const totalJobs = await Job.countDocuments(filter);
 
     let nextCursor = null;
     if (hasNext) {
@@ -78,7 +93,7 @@ const getJobs = async ({ limit = 10, search, cursor, location, status, tag }) =>
             })
         ).toString('base64');
     }
-    return { jobs, nextCursor };
+    return { jobs, nextCursor, totalJobs };
     // return { data: jobs, nextCursor, hasNext };
 };
 
