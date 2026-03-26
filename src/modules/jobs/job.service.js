@@ -133,8 +133,42 @@ const searchJobs = async({ q, limit = 10, cursor } ) => {
         total: result.total || 0
     };
 };
+const updateJobs = async(id, data, userId) => {
+    const job = await Job.findById(id);
+    if (!job) throw new ApiError(404, "Job not found");
+
+    if (job.postedBy.toString() !== userId.toString()) {
+        throw new ApiError(403, "Not authorized to update this job");
+    }
+
+    Object.assign(job, data);
+    await job.save();
+    //invalidate the  caceh
+    // await redis.del(`jobbify:job${id}`);
+    // await redis.del(`jobbify:stats`);
+
+    return job;
+}
+
+const deleteJob = async(id, data, userId) => {
+    const job = await Job.findById(id);
+    if (!job) throw new ApiError(404, "Job not found");
+
+    if (job.postedBy.toString() !== userId.toString()) {
+        throw new ApiError(403, "Not authorized to update this job");
+    }
+
+    Object.assign(job, data);
+    await job.save();
+
+    //invalidate the  caceh
+    // await redis.del(`jobbify:job${id}`);
+    // await redis.del(`jobbify:stats`);
+    return job;
+}
 
 module.exports = {
     createJob, getJobs,
-    getJobById, searchJobs
+    getJobById, searchJobs,
+    updateJobs, deleteJob
 };

@@ -3,7 +3,7 @@ const ApiError = require('../../utils/ApiError');
 const ApiResponse = require('../../utils/ApiResponse');
 const asyncHandler = require('../../utils/asyncHandler');
 
-const { createJob, getJobs, getJobById, searchJobs } = require('./job.service');
+const { createJob, getJobs, getJobById, searchJobs, updateJobs, deleteJob } = require('./job.service');
 
 const create = asyncHandler(async (req, res) => {
     const errors = validationResult(req);
@@ -29,4 +29,18 @@ const search = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, "Search result", result.jobs, {total: result.total}));
 })
 
-module.exports = { create, list, singleJob, search };
+const update = asyncHandler(async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        throw new ApiError(422, "Validation failed", errors.array());
+    }
+    const job = await updateJobs(req.params.id, req.body, req.user._id);
+    res.status(200).json(new ApiResponse(200, "updated job successfully", job));
+});
+
+const remove = asyncHandler(async() => {
+    await deleteJob(req.params.id, req.user._id);
+    res.status(200).json(new ApiResponse(200, "job deleted"));
+})
+
+module.exports = { create, list, singleJob, search, update, remove };
