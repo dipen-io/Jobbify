@@ -94,7 +94,7 @@ jobSchema.pre('find', function () {
     this.where({
         $or: [
             { deadline: { $exists: false } },
-            { deadline: { $get: new Date()} }
+            { deadline: { $gte: new Date()} }
         ]
     });
 });
