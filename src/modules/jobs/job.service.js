@@ -107,8 +107,34 @@ const getJobById = async (id) => {
     // await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(job));
     return job;
 }
+const searchJobs = async({ q, limit = 10, cursor } ) => {
+    if (!q) throw new ApiError(400, "Search query is required");
+
+    const pipelines = [
+        { $match: { $text: { $search: q }, status: 'open' } },
+        { $sort: { score: { $meta: 'textScore' }, createdAt: -1 } },
+        {
+            $facet: {
+                data: [{ $limit: Number(limit) }],
+                total: [{ $count: 'count'}]
+            },
+        },
+        {
+            $project: {
+                data: 1,
+                total: {$arrayElemAt: ['$total.count', 0] },
+            },
+        },
+    ];
+
+    const [result] = await Job.aggregate(pipelines);
+    return {
+        jobs: result.data,
+        total: result.total || 0
+    };
+};
 
 module.exports = {
     createJob, getJobs,
-    getJobById
+    getJobById, searchJobs
 };

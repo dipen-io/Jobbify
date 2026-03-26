@@ -5,8 +5,14 @@ workMode = remote, hybrid, internship
 location = debuai
 skills = Node.js
 search = yeh
+
+//classic search
 /api/v1/jobs?jobType=full-time&location=Dubai&skills=Node.js&workMode=remote&search=developer
-# hcreate job
+
+
+//single search
+http://localhost:8001/api/v1/jobs/search?q=Node
+# create job
 [
   {
     "title": "Frontend Developer",
