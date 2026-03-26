@@ -5,5 +5,6 @@ const { create, list } = require('./job.controller');
 const { createJobValidator, updateJobValidator, paginationValidator } = require('./job.validator');
 
 router.post('/', protect, authorize('recruiter'), createJobValidator, create);
+router.get('/', paginationValidator ,list);
 
 module.exports = router;
