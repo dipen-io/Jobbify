@@ -38,9 +38,9 @@ const update = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, "updated job successfully", job));
 });
 
-const remove = asyncHandler(async() => {
+const deletejob = asyncHandler(async(req, res) => {
     await deleteJob(req.params.id, req.user._id);
     res.status(200).json(new ApiResponse(200, "job deleted"));
 })
 
-module.exports = { create, list, singleJob, search, update, remove };
+module.exports = { create, list, singleJob, search, update, deletejob };

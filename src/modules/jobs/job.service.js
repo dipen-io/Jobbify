@@ -150,17 +150,14 @@ const updateJobs = async(id, data, userId) => {
     return job;
 }
 
-const deleteJob = async(id, data, userId) => {
+const deleteJob = async(id,  userId) => {
     const job = await Job.findById(id);
     if (!job) throw new ApiError(404, "Job not found");
 
     if (job.postedBy.toString() !== userId.toString()) {
         throw new ApiError(403, "Not authorized to update this job");
     }
-
-    Object.assign(job, data);
-    await job.save();
-
+    await job.deleteOne();
     //invalidate the  caceh
     // await redis.del(`jobbify:job${id}`);
     // await redis.del(`jobbify:stats`);
