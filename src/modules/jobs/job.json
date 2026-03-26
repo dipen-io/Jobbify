@@ -1,0 +1,95 @@
+#filters
+#keys 
+jobType = full-time, part-time, onsite
+workMode = remote, hybrid, internship
+location = debuai
+skills = Node.js
+search = yeh
+/api/v1/jobs?jobType=full-time&location=Dubai&skills=Node.js&workMode=remote&search=developer
+# hcreate job
+[
+  {
+    "title": "Frontend Developer",
+    "description": "Build UI with React",
+    "company": { "name": "UIWorks", "website": "https://uiworks.com" },
+    "location": "Dubai",
+    "jobType": "full-time",
+    "workMode": "onsite",
+    "experienceLevel": "junior",
+    "skills": ["React", "CSS"],
+    "deadline": "2026-05-10",
+    "salary": { "min": 300000, "max": 700000 },
+    "tags": ["frontend"],
+    "status": "open"
+  },
+  {
+    "title": "Full Stack Engineer",
+    "description": "Work on full stack apps",
+    "company": { "name": "DevHub", "website": "https://devhub.com" },
+    "location": "Bangalore",
+    "jobType": "full-time",
+    "workMode": "hybrid",
+    "experienceLevel": "mid",
+    "skills": ["Node.js", "React"],
+    "deadline": "2026-06-01",
+    "salary": { "min": 600000, "max": 1500000 },
+    "tags": ["fullstack"],
+    "status": "open"
+  },
+  {
+    "title": "Backend Engineer",
+    "description": "APIs with Node",
+    "company": { "name": "ApiFlow", "website": "https://apiflow.com" },
+    "location": "Remote",
+    "jobType": "contract",
+    "workMode": "remote",
+    "experienceLevel": "senior",
+    "skills": ["Node.js", "MongoDB"],
+    "deadline": "2026-04-15",
+    "salary": { "min": 800000, "max": 1800000 },
+    "tags": ["backend"],
+    "status": "open"
+  },
+  {
+    "title": "Data Analyst",
+    "description": "Analyze business data",
+    "company": { "name": "DataCorp", "website": "https://datacorp.com" },
+    "location": "Delhi",
+    "jobType": "part-time",
+    "workMode": "onsite",
+    "experienceLevel": "junior",
+    "skills": ["Python", "SQL"],
+    "deadline": "2026-07-01",
+    "salary": { "min": 200000, "max": 500000 },
+    "tags": ["data"],
+    "status": "open"
+  },
+  {
+    "title": "DevOps Engineer",
+    "description": "CI/CD pipelines",
+    "company": { "name": "CloudOps", "website": "https://cloudops.com" },
+    "location": "Remote",
+    "jobType": "full-time",
+    "workMode": "remote",
+    "experienceLevel": "mid",
+    "skills": ["Docker", "AWS"],
+    "deadline": "2026-05-20",
+    "salary": { "min": 700000, "max": 1400000 },
+    "tags": ["devops"],
+    "status": "open"
+  },
+  {
+    "title": "Mobile App Developer",
+    "description": "Build mobile apps",
+    "company": { "name": "Appify", "website": "https://appify.com" },
+    "location": "Mumbai",
+    "jobType": "internship",
+    "workMode": "onsite",
+    "experienceLevel": "junior",
+    "skills": ["Flutter"],
+    "deadline": "2026-04-25",
+    "salary": { "min": 100000, "max": 300000 },
+    "tags": ["mobile"],
+    "status": "open"
+  },
+]
