@@ -157,6 +157,9 @@ const deleteJob = async(id,  userId) => {
     if (job.postedBy.toString() !== userId.toString()) {
         throw new ApiError(403, "Not authorized to update this job");
     }
+    // we can do like this
+    // job.status = 'closed';
+    // await job.save();
     await job.deleteOne();
     //invalidate the  caceh
     // await redis.del(`jobbify:job${id}`);
