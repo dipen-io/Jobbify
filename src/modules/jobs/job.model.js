@@ -58,12 +58,12 @@ const jobSchema = new mongoose.Schema({
     },
     tags: {
         type: [String],
-        defautl: []
+        default: []
     },
     status: {
         type: String,
         enum: ['open', 'closed'],
-        defautl: 'open'
+        default: 'open'
     },
     views: {
         type: Number,
