@@ -3,7 +3,7 @@ const ApiError = require('../../utils/ApiError');
 const ApiResponse = require('../../utils/ApiResponse');
 const asyncHandler = require('../../utils/asyncHandler');
 
-const { createJob, getJobs } = require('./job.service');
+const { createJob, getJobs, getJobById } = require('./job.service');
 
 const create = asyncHandler(async (req, res) => {
     const errors = validationResult(req);
@@ -19,4 +19,10 @@ const list = asyncHandler(async (req, res) => {
     res.status(200).json(new ApiResponse(200, 'Job Fetched', result.jobs  ,{ nextCursor: result.nextCursor, totalJobs: result.totalJobs }));
 });
 
-module.exports = { create, list };
+const singleJob = asyncHandler(async (req, res) => {
+    const job = await getJobById(req.params.id);
+    res.status(200).json(new ApiResponse(200, "fetch single job", job));
+});
+// const singleJob = asyncHandler(asyn (req,res) => {})
+
+module.exports = { create, list, singleJob };

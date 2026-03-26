@@ -96,7 +96,19 @@ const getJobs = async ({ limit = 10, search, cursor, location, status, tag, skil
     return { jobs, nextCursor, totalJobs };
     // return { data: jobs, nextCursor, hasNext };
 };
+const getJobById = async (id) => {
+    // const cacheKey =  `jobbify:job${id}`;
+    // const cached = await redis.get(cacheKey);
+    // if (cached) return JSON.parse(cached);
+
+    const job  = await Job.findById(id).populate('postedBy', 'name email');
+    if (!job) throw new ApiError(404, "Job not found");
+
+    // await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(job));
+    return job;
+}
 
 module.exports = {
-    createJob, getJobs
+    createJob, getJobs,
+    getJobById
 };
