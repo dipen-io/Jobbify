@@ -11,7 +11,7 @@ const connectToDatabase = async () => {
     // Set up listeners ONLY ONCE (outside the try/catch or before connecting)
     mongoose.connection.on('connected', () => console.log('✅ MongoDB: Connected'));
     mongoose.connection.on('error', (err) => console.error(`❌ MongoDB: ${err.message}`));
-    mongoose.connection.on('disconnected', () => console.warn('⚠️ MongoDB: Disconnected'));
+    // mongoose.connection.on('disconnected', () => console.warn('⚠️ MongoDB: Disconnected'));
 
     const options = {
         serverSelectionTimeoutMS: 5000,

@@ -1,6 +1,9 @@
 const app = require('./src/app');
 const http = require('http');
-const  connectToDatabase  = require('./src/config/db');
+const redis = require('./src/config/redis');
+const Redis =require("ioredis");
+const  redisClient = new Redis();
+const connectToDatabase  = require('./src/config/db');
 const gracefulShutdown = require('./src/utils/shutdown');
 
 const PORT = process.env.PORT || 8000;
@@ -10,7 +13,7 @@ const server = http.createServer(app);
 const startServer = async () => {
     try {
         await connectToDatabase()
-        // await redis.connect();
+        await redis.connect();
         server.listen(PORT, () => {
             console.log(`Server is running on port ${PORT}`);
         });
@@ -20,7 +23,8 @@ const startServer = async () => {
     }
 };
 
-// process.on('SIGTERM', () => gracefulShutdown(server, redisClient, 'SIGTERM'));
+process.on('SIGTERM', () => gracefulShutdown(server, redisClient, 'SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown(server, redisClient, 'SIGINT'));
 process.on('SIGTERM', () => gracefulShutdown(server, 'SIGTERM'));
 process.on('SIGINT', () => gracefulShutdown(server, 'SIGINT'));
 
