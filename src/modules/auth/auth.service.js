@@ -72,7 +72,7 @@ const loginUser = async(res, { email, password}) => {
   return { user: { _id: user._id, name: user.name, email: user.email, role: user.role }, accessToken, refreshToken };
 }
 
-const refreshAccessToken = async(token) => {
+const refreshAccessToken = async(res, token) => {
     if (!token) throw new ApiError(401, 'Refresh Token is required')
     let decoded; 
     try {
@@ -82,12 +82,13 @@ const refreshAccessToken = async(token) => {
     }
 
     const user = await User.findById(decoded.id).select('+refreshToken');
-    // const storeToken = await redis.get(`refresh${user._id}`);
-    const storeToken = await redis.get(REDIS_SCHEMA.refreshToken.getKey(user._id));
 
     if (!user) {
         throw new ApiError (401, 'User not found or token missing');
     } 
+
+    // const storeToken = await redis.get(`refresh${user._id}`);
+    const storeToken = await redis.get(REDIS_SCHEMA.refreshToken.getKey(user._id));
 
     const isMatch =  await bcrypt.compare(token, user.refreshToken);
     const isMatched = await bcrypt.compare(token, storeToken);
@@ -101,6 +102,16 @@ const refreshAccessToken = async(token) => {
     const hashedToken = await bcrypt.hash(refreshToken, 10);
     user.refreshToken = hashedToken;
     await user.save({ validateBeforeSave: false }); 
+
+    await REDIS_SCHEMA.refreshToken.save(redis, user._id, hashedToken);
+    // UPDATE THE COOKIE (Overwrite the old one)
+    const cookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in ms
+    };
+    res.cookie('refreshToken', refreshToken, cookieOptions);
     return { accessToken, refreshToken };
 }
 
