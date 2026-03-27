@@ -19,6 +19,7 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
+
 //Routes
 // app.use('api/v1/auth', require(./modules/auth/auth.router)); 
 app.use('/api/v1/auth', require("./modules/auth/auth.router"));
