@@ -3,8 +3,12 @@ class ApiResponse {
         this.success = true;
         this.statusCode = statusCode;
         this.message = message;
-        this.meta = meta;
         this.data = data;
+        this.meta = {
+            timestamps: new Date().toISOString(),
+            unix: Date.now(),
+            meta,
+        }
     }
 }
 
