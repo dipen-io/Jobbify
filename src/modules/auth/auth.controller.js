@@ -1,9 +1,9 @@
-const {validationResult} = require('express-validator');
+const { validationResult } = require('express-validator');
 const { loginUser, registerUser, refreshAccessToken } = require('./auth.service');
 const  asyncHandler = require('../../utils/asyncHandler')
 const ApiError = require('../../utils/ApiError');
 const ApiResponse = require('../../utils/ApiResponse');
-const redis   = require('../../config/redis');
+
 
 const register = asyncHandler(async (req, res) => {
     const errors = validationResult(req);

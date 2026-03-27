@@ -3,7 +3,8 @@ const User = require('./user.model')
 const ApiError = require('../../utils/ApiError');
 const bcrypt = require("bcryptjs");
 const redis = require('../../config/redis');
-const  REDIS_SCHEMA  = require('../../redis/schema');
+const REDIS_SCHEMA  = require('../../redis/schema');
+const { COOKIE_OPTIONS } = require('../../constants/cookieOptions');
 
 const generateToken = async(userId, role) => {
    const accessToken = jwt.sign(
@@ -63,12 +64,7 @@ const loginUser = async(res, { email, password}) => {
     //     }
     // )
     await REDIS_SCHEMA.refreshToken.save(redis, user._id, hashedToken);
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      });
+    res.cookie( 'refreshToken', refreshToken, COOKIE_OPTIONS );
   return { user: { _id: user._id, name: user.name, email: user.email, role: user.role }, accessToken, refreshToken };
 }
 
@@ -98,20 +94,15 @@ const refreshAccessToken = async(res, token) => {
     if (!isMatched) {
         throw new ApiError(401, 'Refresh token missmatch');
     }
-    const {accessToken, refreshToken} = await generateToken(user._id, user.role);
+    const { accessToken, refreshToken } = await generateToken(user._id, user.role);
     const hashedToken = await bcrypt.hash(refreshToken, 10);
     user.refreshToken = hashedToken;
     await user.save({ validateBeforeSave: false }); 
 
+    // update the cookie in redis & cookies
     await REDIS_SCHEMA.refreshToken.save(redis, user._id, hashedToken);
-    // UPDATE THE COOKIE (Overwrite the old one)
-    const cookieOptions = {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days in ms
-    };
-    res.cookie('refreshToken', refreshToken, cookieOptions);
+    res.cookie( 'refreshToken', refreshToken, COOKIE_OPTIONS );
+
     return { accessToken, refreshToken };
 }
 
