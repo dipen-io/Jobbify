@@ -3,9 +3,7 @@ const User = require('./user.model')
 const ApiError = require('../../utils/ApiError');
 const bcrypt = require("bcryptjs");
 const redis = require('../../config/redis');
-const { REDIS_KEYS } = require('../../utils/redisKeys');
 const  REDIS_SCHEMA  = require('../../redis/schema');
-// const { REDIS_SCHEMA } = require('../../redis/schema');
 
 const generateToken = async(userId, role) => {
    const accessToken = jwt.sign(
@@ -64,7 +62,7 @@ const loginUser = async(res, { email, password}) => {
     //         EX: 7 * 24 * 60 * 60 // 7 days
     //     }
     // )
-    await REDIS_SCHEMA.refreshToken.save(redis, user._id, refreshToken);
+    await REDIS_SCHEMA.refreshToken.save(redis, user._id, hashedToken);
     res.cookie('refreshToken', refreshToken, {
         httpOnly: true,
         secure: true,
@@ -76,7 +74,6 @@ const loginUser = async(res, { email, password}) => {
 
 const refreshAccessToken = async(token) => {
     if (!token) throw new ApiError(401, 'Refresh Token is required')
-
     let decoded; 
     try {
         decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
@@ -84,26 +81,22 @@ const refreshAccessToken = async(token) => {
         throw new ApiError(401, 'Invalid or expired refresh token');
     }
 
-    const storeToken = await redis.get(`refresh${user._id}`);
     const user = await User.findById(decoded.id).select('+refreshToken');
-    if (!user || user.refreshToken) {
+    // const storeToken = await redis.get(`refresh${user._id}`);
+    const storeToken = await redis.get(REDIS_SCHEMA.refreshToken.getKey(user._id));
+
+    if (!user) {
         throw new ApiError (401, 'User not found or token missing');
     } 
 
-    const isMatch =  bcrypt.compare(token, user.refreshToken);
-    const isMatched =  bcrypt.compare(token, storeToken);
+    const isMatch =  await bcrypt.compare(token, user.refreshToken);
+    const isMatched = await bcrypt.compare(token, storeToken);
     if (!isMatch) {
         throw new ApiError(401, 'Refresh token missmatch');
     }
     if (!isMatched) {
-        //TODO: remove
-        console.log("NOT Matched the redis's refreshToken")
         throw new ApiError(401, 'Refresh token missmatch');
     }
-
-    //TODO: remove
-    console.log("Matched the redis's refreshToken")
-
     const {accessToken, refreshToken} = await generateToken(user._id, user.role);
     const hashedToken = await bcrypt.hash(refreshToken, 10);
     user.refreshToken = hashedToken;

@@ -32,7 +32,7 @@ const login = asyncHandler(async (req, res) => {
 })
 
 const refreshToken = asyncHandler(async (req, res) => {
-    const {refreshToken} = req.body
+    const refreshToken = req.cookies.refreshToken;
     const result = await refreshAccessToken(refreshToken);
 
     res.status(200).json(new ApiResponse(200, "Token Refreshed", result));
