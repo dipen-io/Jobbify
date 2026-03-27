@@ -18,7 +18,21 @@ const REDIS_SCHEMA = {
         prefix: 'sess:',
         ttl: 3600, // 1 hour
         getKey: (sessId) => `sess:${sessId}`
+    },
+    userProfile: {
+        getKey: (userId) => `user:profile:${userId}`,
+        ttl: 1800, // 30 minutes
+
+        // Helper to prepare the object for Redis Hashes
+        prepare: (user) => ({
+            _id: user._id.toString(),
+            name: String(user.name),
+            email: String(user.email),
+            role: String(user.role),
+            // Add other fields here, but keep them as strings/numbers
+        })
     }
+
 };
 
 module.exports = REDIS_SCHEMA;
