@@ -2,6 +2,10 @@ const jwt = require('jsonwebtoken');
 const User = require('./user.model')
 const ApiError = require('../../utils/ApiError');
 const bcrypt = require("bcryptjs");
+const redis = require('../../config/redis');
+const { REDIS_KEYS } = require('../../utils/redisKeys');
+const  REDIS_SCHEMA  = require('../../redis/schema');
+// const { REDIS_SCHEMA } = require('../../redis/schema');
 
 const generateToken = async(userId, role) => {
    const accessToken = jwt.sign(
@@ -33,7 +37,7 @@ const registerUser = async ({name, email, password, role}) => {
 
 }
 
-const loginUser = async({email, password}) => {
+const loginUser = async(res, { email, password}) => {
     const user = await User.findOne({email}).select('+password');
     if (!user) throw new ApiError(401, 'Invalid email or password');
 
@@ -41,8 +45,32 @@ const loginUser = async({email, password}) => {
     if (!isMatch) throw new ApiError(401, 'Invalid email or password');
 
     const { accessToken , refreshToken } = await  generateToken(user._id, user.role);
-    user.refreshToken = refreshToken
+    /*
+     * db hit on every login
+     * harder to make multiple session
+     * slower tokens validation
+     * better approach is 
+     * store in redis
+    */
+
+    const hashedToken = await bcrypt.hash(refreshToken, 10);
+    user.refreshToken = hashedToken; 
     await user.save({ validateBeforeSave: false });
+    const key = REDIS_SCHEMA.refreshToken.getKey(user._id);
+    // await redis.set(
+    //     key,
+    //     refreshToken, 
+    //     {
+    //         EX: 7 * 24 * 60 * 60 // 7 days
+    //     }
+    // )
+    await REDIS_SCHEMA.refreshToken.save(redis, user._id, refreshToken);
+    res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
   return { user: { _id: user._id, name: user.name, email: user.email, role: user.role }, accessToken, refreshToken };
 }
 
@@ -56,15 +84,25 @@ const refreshAccessToken = async(token) => {
         throw new ApiError(401, 'Invalid or expired refresh token');
     }
 
+    const storeToken = await redis.get(`refresh${user._id}`);
     const user = await User.findById(decoded.id).select('+refreshToken');
     if (!user || user.refreshToken) {
         throw new ApiError (401, 'User not found or token missing');
     } 
 
-    const isMatch = await bcrypt.compare(token, user.refreshToken);
+    const isMatch =  bcrypt.compare(token, user.refreshToken);
+    const isMatched =  bcrypt.compare(token, storeToken);
     if (!isMatch) {
         throw new ApiError(401, 'Refresh token missmatch');
     }
+    if (!isMatched) {
+        //TODO: remove
+        console.log("NOT Matched the redis's refreshToken")
+        throw new ApiError(401, 'Refresh token missmatch');
+    }
+
+    //TODO: remove
+    console.log("Matched the redis's refreshToken")
 
     const {accessToken, refreshToken} = await generateToken(user._id, user.role);
     const hashedToken = await bcrypt.hash(refreshToken, 10);

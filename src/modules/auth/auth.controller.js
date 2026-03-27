@@ -3,6 +3,7 @@ const { loginUser, registerUser, refreshAccessToken } = require('./auth.service'
 const  asyncHandler = require('../../utils/asyncHandler')
 const ApiError = require('../../utils/ApiError');
 const ApiResponse = require('../../utils/ApiResponse');
+const redis   = require('../../config/redis');
 
 const register = asyncHandler(async (req, res) => {
     const errors = validationResult(req);
@@ -26,7 +27,7 @@ const login = asyncHandler(async (req, res) => {
     if (!errors.isEmpty()) {
         throw new ApiError(422, 'Validation Failed', errors.array());
     }
-    const result = await loginUser(req.body);
+    const result = await loginUser(res, req.body);
     res.status(200).json(new ApiResponse(200, "Login Successfull", result));
 })
 
