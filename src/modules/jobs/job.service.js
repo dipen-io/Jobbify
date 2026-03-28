@@ -151,7 +151,7 @@ const updateJobs = async(id, data, userId) => {
     Object.assign(job, data);
     await job.save();
     //invalidate the  caceh
-    // await redis.del(`jobbify:job${id}`);
+    await redis.del(`job:details:${id}`);
     // await redis.del(`jobbify:stats`);
 
     return job;
