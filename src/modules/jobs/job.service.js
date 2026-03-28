@@ -139,6 +139,7 @@ const searchJobs = async({ q, limit = 10, cursor } ) => {
         total: result.total || 0
     };
 };
+
 const updateJobs = async(id, data, userId) => {
     const job = await Job.findById(id);
     if (!job) throw new ApiError(404, "Job not found");
@@ -151,7 +152,7 @@ const updateJobs = async(id, data, userId) => {
     await job.save();
     //invalidate the  caceh
     await redis.del(`job:details:${id}`);
-    // await redis.del(`jobbify:stats`);
+    await redis.del(`jobbify:stats`);
 
     return job;
 }
@@ -169,12 +170,12 @@ const deleteJob = async(id,  userId) => {
     await redis.del(`job:details:${id}`);
     //invalidate the  caceh
     await job.deleteOne();
-    // await redis.del(`jobbify:stats`);
+    await redis.del(`jobbify:stats`);
     return job;
 }
 
 const getStats = async() => {
-    const cachedKey = 'jobbifi:stats';
+    const cachedKey = 'jobbify:stats';
     const cached = await redis.get(cachedKey);
     if (cached) return json.parse(cached);
 
