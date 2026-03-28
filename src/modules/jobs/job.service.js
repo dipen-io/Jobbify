@@ -65,7 +65,6 @@ const getJobs = async ({ limit = 10, search, cursor, location, status, tag, skil
         }
     }
 
-
     // build the final filter
     const filter = andConditions.length > 0 ? { $and: andConditions } : {};
     // determine sort order 
@@ -167,15 +166,64 @@ const deleteJob = async(id,  userId) => {
     // we can do like this
     // job.status = 'closed';
     // await job.save();
-    await job.deleteOne();
+    await redis.del(`job:details:${id}`);
     //invalidate the  caceh
-    // await redis.del(`jobbify:job${id}`);
+    await job.deleteOne();
     // await redis.del(`jobbify:stats`);
     return job;
+}
+
+const getStats = async() => {
+    const cachedKey = 'jobbifi:stats';
+    const cached = await redis.get(cachedKey);
+    if (cached) return json.parse(cached);
+
+    const stats = await Job.aggregate([
+        { $match: {status: 'open'} },
+        {
+            $facet: {
+                byLocation: [
+                    {
+                        $group: {
+                            _id: {$avg: `$location`},
+                            avgSalary: { $avg: `$salary.max`},
+                            jobCount: { $sum: 1},
+                        },
+                    },
+                    { $sort: {JobCount: -1} },
+                    { $limit: 10},
+                ],
+                byTag: [
+                    { $unwind: `$tags`},
+                    {
+                        $group: {
+                            _id: `$tags`,
+                            count: { $sum: 1 },
+                        },
+                    },
+                    {$sort: {count: -1}},
+                    {$limit: 10},
+                ],
+                overview: [
+                    {
+                        $group: {
+                            _id: null,
+                            totalJobs: {$sum: 1},
+                            avgMinSalary: {$avg: `$salary.min`},
+                            avgMaxSalary: {$avg: `$salary.mix`},
+                        },
+                    }
+                ]
+            }
+        }
+    ]);
+    await redis.set(cachedKey, JSON.stringify(stats[0]), 'EX', 300);
+    return stats[0];
 }
 
 module.exports = {
     createJob, getJobs,
     getJobById, searchJobs,
-    updateJobs, deleteJob
+    updateJobs, deleteJob,
+    getStats,
 };
