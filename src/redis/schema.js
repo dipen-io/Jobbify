@@ -31,6 +31,10 @@ const REDIS_SCHEMA = {
             role: String(user.role),
             // Add other fields here, but keep them as strings/numbers
         })
+    },
+    jobDetails: {
+        getKey: (jobId) => `job:details${jobId}`,
+        ttl: 3600,
     }
 
 };

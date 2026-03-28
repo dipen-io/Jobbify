@@ -23,6 +23,7 @@ const singleJob = asyncHandler(async (req, res) => {
     const job = await getJobById(req.params.id);
     res.status(200).json(new ApiResponse(200, "fetch single job", job));
 });
+
 const search = asyncHandler(async (req, res) => {
     console.log("search working ");
     const result = await searchJobs(req.query);

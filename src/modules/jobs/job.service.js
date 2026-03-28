@@ -2,7 +2,8 @@ const Job = require('./job.model');
 const User = require('../auth/user.model');
 const mongoose = require('mongoose');
 const ApiError = require('../../utils/ApiError');
-// const redis = require('../../config/redis');
+const REDIS_SCHEMA = require('../../redis/schema');
+const redis = require('../../config/redis');
 
 const CACHE_TTL = 60; // seconds 
 
@@ -97,14 +98,20 @@ const getJobs = async ({ limit = 10, search, cursor, location, status, tag, skil
     // return { data: jobs, nextCursor, hasNext };
 };
 const getJobById = async (id) => {
-    // const cacheKey =  `jobbify:job${id}`;
-    // const cached = await redis.get(cacheKey);
-    // if (cached) return JSON.parse(cached);
+    const cacheKey =  REDIS_SCHEMA.jobDetails.getKey(id);
+    const cachedJob = await redis.get(cacheKey);
 
+    // return from cached of found
+    if (cachedJob){
+        return JSON.parse(cachedJob);
+    }
+    
+    // no cached just pull from db
     const job  = await Job.findById(id).populate('postedBy', 'name email');
     if (!job) throw new ApiError(404, "Job not found");
 
-    // await redis.setex(cacheKey, CACHE_TTL, JSON.stringify(job));
+    // save to redis
+    await redis.set(cacheKey, JSON.stringify(job), 'EX' , REDIS_SCHEMA.jobDetails.ttl);
     return job;
 }
 const searchJobs = async({ q, limit = 10, cursor } ) => {
