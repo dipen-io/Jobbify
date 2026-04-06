@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('./user.model')
+const User = require('../user/user.model')
 const ApiError = require('../../utils/ApiError');
 const bcrypt = require("bcryptjs");
 const redis = require('../../config/redis');

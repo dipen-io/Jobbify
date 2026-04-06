@@ -1,5 +1,4 @@
 const Job = require('./job.model');
-const User = require('../auth/user.model');
 const mongoose = require('mongoose');
 const ApiError = require('../../utils/ApiError');
 const REDIS_SCHEMA = require('../../redis/schema');
