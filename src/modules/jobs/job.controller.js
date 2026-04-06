@@ -1,14 +1,9 @@
-const { validationResult } = require('express-validator')
-const ApiError = require('../../utils/ApiError');
 const ApiResponse = require('../../utils/ApiResponse');
 const asyncHandler = require('../../utils/asyncHandler');
 
 const { createJob, getJobs, getJobById, searchJobs, updateJobs, deleteJob, getStats } = require('./job.service');
 
 const create = asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) throw new ApiError(422, 'Validation failed', errors.array());
-
     const job = await createJob(req.body, req.user._id);
     res.status(201).json(new ApiResponse(201, 'Job Created ', job));
 })
@@ -25,16 +20,11 @@ const singleJob = asyncHandler(async (req, res) => {
 });
 
 const search = asyncHandler(async (req, res) => {
-    console.log("search working ");
     const result = await searchJobs(req.query);
     res.status(200).json(new ApiResponse(200, "Search result", result.jobs, {total: result.total}));
 })
 
 const update = asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        throw new ApiError(422, "Validation failed", errors.array());
-    }
     const job = await updateJobs(req.params.id, req.body, req.user._id);
     res.status(200).json(new ApiResponse(200, "updated job successfully", job));
 });

@@ -6,11 +6,6 @@ const ApiResponse = require('../../utils/ApiResponse');
 
 
 const register = asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        throw new ApiError(422, 'Validation falied', errors.array());
-    }
-
     const result  = await registerUser(req.body);
     
     res.cookie('refreshToken', refreshToken, {
@@ -23,10 +18,6 @@ const register = asyncHandler(async (req, res) => {
 })
 
 const login = asyncHandler(async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        throw new ApiError(422, 'Validation Failed', errors.array());
-    }
     const result = await loginUser(res, req.body);
     res.status(200).json(new ApiResponse(200, "Login Successfull", result));
 })
