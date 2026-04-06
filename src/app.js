@@ -18,8 +18,11 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 if (process.env.NODE_ENV === 'development') {
-    app.use(morgan('dev'));
+  app.use(morgan('dev'));
+} else {
+  app.use(morgan('combined'));
 }
+
 
 //Routes
 // routes(app);
