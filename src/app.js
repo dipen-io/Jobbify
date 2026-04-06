@@ -1,6 +1,8 @@
 require('dotenv').config();
 require('./config/env');
 const errorHandler = require('../src/middleware/errorHandler');
+// const routes = require('./routes');
+const loadRoutes = require('./routes');
 
 const express = require('express');
 const cors = require('cors');
@@ -19,17 +21,15 @@ if (process.env.NODE_ENV === 'development') {
     app.use(morgan('dev'));
 }
 
-
 //Routes
-// app.use('api/v1/auth', require(./modules/auth/auth.router)); 
-app.use('/api/v1/auth', require("./modules/auth/auth.router"));
-app.use('/api/v1/jobs', require("./modules/jobs/job.router"));
-// app.use('api/v1/upload', require(./modules/upload/upload.router)); 
+// routes(app);
+loadRoutes(app);
 
 // Health check 
 app.get('/health', (req, res) => {
     res.json({ success: true, message: 'Jobbify API is running' });
 })
+
 
 // 404
 app.use((req, res) => {
