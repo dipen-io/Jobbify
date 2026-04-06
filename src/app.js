@@ -1,7 +1,7 @@
 require('dotenv').config();
 require('./config/env');
 const errorHandler = require('../src/middleware/errorHandler');
-// const routes = require('./routes');
+const { globalLimiter } = require("./middleware/rateLimit");
 const loadRoutes = require('./routes');
 
 const express = require('express');
@@ -14,6 +14,7 @@ const app = express();
 // core middleware
 app.use(cors())
 app.use(express.json());
+app.use(globalLimiter);
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
